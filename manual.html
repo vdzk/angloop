@@ -1,0 +1,89 @@
+<html>
+  <head>
+    <title>
+      Angloop!
+    </title>
+    <style>
+      input[type="number"] {
+        width:40px;
+      }
+      svg {
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    Loops:<input type="number" id="loops" min="1" value="1">
+    Sides:<input type="number" id="sides" min="3" value="3">
+    Commands:<input type="text" id="commands" value="FR">
+    <svg width="601" height="601"></svg>
+    <script>
+      document.querySelectorAll('input').forEach(
+        input => {
+          input.addEventListener('change', draw)
+          input.addEventListener('keyup', draw)
+          input.addEventListener('click', draw)
+        }
+      )
+      function draw() {
+        const loops = parseInt(document.getElementById('loops').value)
+        const sides = parseInt(document.getElementById('sides').value)
+        const commands = document.getElementById('commands').value
+        const turn = (loops * Math.PI * 2) / sides  //In radians
+        let angle = turn
+        let lastPoint = {x: 0, y: 0}
+        const points = [{x: 0, y: 0}]
+        for (let s = 0; s < sides; s++) {
+          [...commands].forEach(c => {
+            if (c === 'F') {
+              const {x, y} = lastPoint
+              const dx = Math.cos(angle)
+              const dy = Math.sin(angle)
+              const nextPoint = {
+                x: x + dx,
+                y: y + dy,
+              }
+              points.push(nextPoint)
+              lastPoint = nextPoint
+            } else if (c === 'R') {
+              angle += turn
+            } else if (c === 'L') {
+              angle -= turn
+            }
+          })
+        }
+        let minX = 0
+        let minY = 0
+        let maxX = 0
+        let maxY = 0
+        points.forEach(point => {
+          const {x, y} = point
+          minX = Math.min(minX, x)
+          minY = Math.min(minY, y)
+          maxX = Math.max(maxX, x)
+          maxY = Math.max(maxY, y)
+        })
+        const length = maxX - minX
+        const height = maxY - minY
+        const scale = 600 / Math.max(length, height)
+        points.forEach(point => {
+          const {x, y} = point
+          point.x = (x - minX) * scale
+          point.y = (y - minY) * scale
+        })
+        const svgEl = document.querySelector('svg')
+        svgEl.innerHTML = ''
+        for (let i = 0; i < points.length - 1; i++) {
+          const lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
+          lineEl.setAttribute('x1', points[i].x);
+          lineEl.setAttribute('y1', points[i].y);
+          lineEl.setAttribute('x2', points[i+1].x);
+          lineEl.setAttribute('y2', points[i+1].y);
+          lineEl.setAttribute("stroke", "black")
+          svgEl.append(lineEl);
+        }
+      }
+      draw()
+    </script>
+  </body>
+</html>

@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <title>
+      Angloop!
+    </title>
+    <style>
+      input[type="number"] {
+        width:40px;
+      }
+      svg {
+        padding: 5px;
+      }
+      line {
+        stroke-width: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    Loops:<input type="number" id="loops" min="1" value="1">
+    Sides:<input type="number" id="sides" min="3" value="3">
+    Commands:<input type="text" id="commands" value="FR">
+    <svg width="501" height="501"></svg>
+    <script>
+      document.querySelectorAll('input').forEach(
+        input => input.addEventListener('change', draw)
+      )
+      function draw() {
+        const loops = parseInt(document.getElementById('loops').value)
+        const sides = parseInt(document.getElementById('sides').value)
+        const commands = document.getElementById('commands').value
+        const turn = (loops * Math.PI * 2) / sides  //In radians
+        let nextPoint = {x: 0, y: 0}
+        let angle = turn
+        const points = []
+        for (let s = 0; s <= sides; s++) {
+          const {x, y} = nextPoint
+          points.push({x, y})
+          const dx = Math.cos(angle)
+          const dy = Math.sin(angle)
+          nextPoint = {
+            x: x + dx,
+            y: y + dy,
+          }
+          angle += turn
+        }
+        const center = CalculateCircleCenter(...points.slice(0,3))
+        const radius = Math.sqrt(center.x*center.x + center.y*center.y)
+        const size = 500
+        const scale = size / 2 / radius
+        points.forEach(point => {
+          const {x, y} = point
+          point.x = (x - center.x) * scale + size / 2
+          point.y = (y - center.y) * scale + size / 2
+        })
+        const svgEl = document.querySelector('svg')
+        svgEl.innerHTML = ''
+        for (let i = 0; i < sides; i++) {
+          const lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
+          lineEl.setAttribute('x1', points[i].x);
+          lineEl.setAttribute('y1', points[i].y);
+          lineEl.setAttribute('x2', points[i+1].x);
+          lineEl.setAttribute('y2', points[i+1].y);
+          lineEl.setAttribute("stroke", "black")
+          svgEl.append(lineEl);
+        }
+      }
+      draw()
+
+      https://stackoverflow.com/questions/32861804/how-to-calculate-the-centre-point-of-a-circle-given-three-points
+      function CalculateCircleCenter(A,B,C) {
+        var yDelta_a = B.y - A.y;
+        var xDelta_a = B.x - A.x;
+        var yDelta_b = C.y - B.y;
+        var xDelta_b = C.x - B.x;
+
+        center = {};
+
+        var aSlope = yDelta_a / xDelta_a;
+        var bSlope = yDelta_b / xDelta_b;
+
+        center.x = (aSlope*bSlope*(A.y - C.y) + bSlope*(A.x + B.x) - aSlope*(B.x+C.x) )/(2* (bSlope-aSlope) );
+        center.y = -1*(center.x - (A.x+B.x)/2)/aSlope +  (A.y+B.y)/2;
+        return center;
+      }
+    </script>
+  </body>
+</html>
