@@ -7,6 +7,9 @@
       svg {
         padding: 3px;
       }
+      .cont {
+        display: inline-block;
+      }
     </style>
   </head>
   <body>
@@ -68,23 +71,28 @@
           lineEl.setAttribute("stroke", "black")
           svgEl.append(lineEl);
         }
-        document.getElementById('svgs').append(svgEl)
-        // document.getElementById('svgs').append(document.createTextNode(commands))
+        const contEl = document.createElement('div')
+        contEl.classList.add('cont')
+        contEl.setAttribute('title', (sides / loops)+commands)
+        contEl.append(svgEl)
+        document.getElementById('svgs').append(contEl)
       }
 
       function simplify(commands) {
         let simplified = true
         while (simplified) {
           simplified = false
-          if ((commands[0] === 'L' && commands[commands.length - 1] === 'R') || (commands[0] === 'R' && commands[commands.length - 1] === 'L')) {
-            commands = commands.slice(1, -1)
-            simplified = true
-          }
+          let newCommands = commands
 
-          let newCommands = commands.replace('RL', '')
+          //Remove cancelled out turns e.g. LR or RXXXXXXL
+          if ((commands[0] === 'L' && commands[commands.length - 1] === 'R') || (commands[0] === 'R' && commands[commands.length - 1] === 'L')) {
+            newCommands = newCommands.slice(1, -1)
+          }
+          newCommands = newCommands.replace('RL', '')
           newCommands = newCommands.replace('LR', '')
 
-          if (newCommands.length < commands) {
+          if (newCommands !== commands) {
+            commands = newCommands
             simplified = true
           }
         }
@@ -92,12 +100,63 @@
         return commands
       }
 
+      //Check if the repeating moves forward be simplified.
+      function uniqueForward(commands) {
+        let fs = [0]
+        for (const move of commands) {
+          if (move === 'F') {
+            fs[fs.length - 1]++
+          } else {
+            fs.push(0)
+          }
+        }
+        //Case where start and end is an 'F'
+        fs[0] += fs[fs.length - 1]
+        fs.splice(-1,1)
+        fs = fs.filter(n => n !== 0)
+        const min = Math.min( ...fs )
+        if (min > 1) {
+          for (let d = 2; d <= min; d++) {
+            const canDivide = fs.every(n => (n % d) === 0)
+            if (canDivide) {
+              return false
+            }
+          }
+        }
+        return true
+      }
+
+      //TODO: Do the same for angles
+
       const angles = {}
       function interesting({loops, sides, commands}) {
-        const angle  = sides / loops
+        if (sides !== 7) {
+          return false;
+        }
+
+        //Ignore straight lines
+        let totalTurn = 0
+        for (const move of commands) {
+          if (move === 'L') {
+            totalTurn--
+          } else if ( move === 'R') {
+            totalTurn++
+          }
+        }
+        if (totalTurn === 0) {
+          return false
+        }
+
+        //Ignore boring angles
+        const angle = sides / loops
         if (angle === 2 || angle === 1 || angle < 1) {
           return false
         }
+        const totalAnggle = Math.abs(angle / totalTurn)
+        if (totalAnggle === 2 || totalAnggle === 1 || totalAnggle < 1) {
+          return false
+        }
+
         angles[angle] = angles[angle] || []
         if (angles[angle].includes(commands)) {
           return false
@@ -111,8 +170,10 @@
       function recMove(config, commandsSupply) {
         if (commandsSupply === 0) {
           config.commands = simplify(config.commands)
-          if (interesting(config)) {
-            draw(config)
+          if (uniqueForward(config.commands)) {
+            if (interesting(config)) {
+              draw(config)
+            }
           }
         } else {
           for (const move of moves) {
@@ -121,8 +182,9 @@
         }
       }
 
-      const maxSupply = 10
-      for (let supply = 9; supply < maxSupply; supply++) {
+      const minSupply = 1
+      const maxSupply = 12
+      for (let supply = minSupply; supply < maxSupply; supply++) {
         for (let s = 0; s <= supply; s++) {
           const angleSupply = s
           const commandsSupply = supply - s
@@ -132,7 +194,7 @@
             const newConfig = {
               loops: 1 + loopsSupply,
               sides: 3 + sidesSupply,
-              commands: 'RF'
+              commands: 'F'
             }
             recMove(newConfig, commandsSupply)
           }
