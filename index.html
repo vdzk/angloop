@@ -15,6 +15,10 @@
   <body>
     <div id="svgs"></div>
     <script>
+      const minSupply = 14
+      const maxSupply = 15
+      const sides = 5
+
       let size = 128
       function draw({loops, sides, commands}) {
         const turn = (loops * Math.PI * 2) / sides  //In radians
@@ -63,6 +67,7 @@
         svgEl.setAttribute('width', size+2+'px')
         svgEl.setAttribute('height', size+2+'px')
         for (let i = 0; i < points.length - 1; i++) {
+          //TODO: Create a single curve instead
           const lineEl = document.createElementNS('http://www.w3.org/2000/svg','line');
           lineEl.setAttribute('x1', points[i].x);
           lineEl.setAttribute('y1', points[i].y);
@@ -78,29 +83,7 @@
         document.getElementById('svgs').append(contEl)
       }
 
-      function simplify(commands) {
-        let simplified = true
-        while (simplified) {
-          simplified = false
-          let newCommands = commands
-
-          //Remove cancelled out turns e.g. LR or RXXXXXXL
-          if ((commands[0] === 'L' && commands[commands.length - 1] === 'R') || (commands[0] === 'R' && commands[commands.length - 1] === 'L')) {
-            newCommands = newCommands.slice(1, -1)
-          }
-          newCommands = newCommands.replace('RL', '')
-          newCommands = newCommands.replace('LR', '')
-
-          if (newCommands !== commands) {
-            commands = newCommands
-            simplified = true
-          }
-        }
-
-        return commands
-      }
-
-      //Check if the repeating moves forward be simplified.
+      //Check if the repeating moves forward can be simplified.
       function uniqueForward(commands) {
         let fs = [0]
         for (const move of commands) {
@@ -126,15 +109,92 @@
         return true
       }
 
-      //TODO: Do the same for angles
+      //A set of paterns that should be ignored to avoid repeats
+      const ignore = new Set()
+      function shouldIgnore({loops, sides, commands}) {
+        const arc = loops / sides
+        const normalised = []
+        //We assume that the first move is Forward and hence there the is no continous turn on each end of the commands
+        let lastArc = null
+        const precision = 6
+        for (const move of commands) {
+          if (move === 'F') {
+            normalised.push('F')
+            lastArc = null
+          } else {
+            const thisArc = (move === 'R') ? arc : 1 - arc
+            if (lastArc === null) {
+              normalised.push(thisArc)
+              lastArc = thisArc
+            } else {
+              const totalArc = lastArc + thisArc
+              //Avoid useless spins
+              if ((totalArc % 1).toFixed(precision) === (0).toFixed(precision)) {
+                return true
+              } else {
+                lastArc = totalArc
+                normalised[normalised.length - 1] = totalArc
+              }
+            }
+          }
+        }
+        const strings = normalised
+          .map((move) => {
+            if (move === 'F') {
+              return 'F'
+            } else {
+              const arc = move
+              return (arc % 1).toFixed(precision)
+            }
+          })
+          .filter((move) => move !== (0).toFixed(precision))
 
-      const angles = {}
+        //Check if this patter exists
+        const pattern = strings.join('')
+        if (ignore.has(pattern)) {
+          return true
+        } else {
+          //Avoid in-out symmetry
+          const outStrings = strings.map((move) => {
+            if (move === 'F') {
+              return 'F'
+            } else {
+              return (1 - move).toFixed(precision)
+            }
+          })
+          if (ignore.has(outStrings.join(''))) {
+            return true
+          } else {
+            //Record this and all derrivative patterns
+            let variations = strings.slice()
+            // console.log((sides / loops)+commands, variations.join(''))
+            //Capture repeating patterns
+            while (variations.length <= maxSupply + 1) {
+              //Capture rotating patterns
+              for (let i = 0; i < strings.length; i++) {
+                ignore.add(variations.join(''))
+                //Capture dirrectional symmetry
+                ignore.add(variations.slice().reverse().join(''))
+                const head = variations.shift()
+                variations.push(head)
+              }
+              variations = variations.concat(strings)
+            }
+          }
+          return false
+        }
+      }
+
+
       function interesting({loops, sides, commands}) {
-        if (sides !== 7) {
-          return false;
+        // if (sides !== 5) {
+        //   return false
+        // }
+
+        if (!uniqueForward(commands)) {
+          return false
         }
 
-        //Ignore straight lines
         let totalTurn = 0
         for (const move of commands) {
           if (move === 'L') {
@@ -143,61 +203,68 @@
             totalTurn++
           }
         }
+        //Ignore straight lines
         if (totalTurn === 0) {
           return false
         }
-
-        //Ignore boring angles
-        const angle = sides / loops
-        if (angle === 2 || angle === 1 || angle < 1) {
-          return false
-        }
-        const totalAnggle = Math.abs(angle / totalTurn)
-        if (totalAnggle === 2 || totalAnggle === 1 || totalAnggle < 1) {
+        //Avoid left-right symmetry
+        if (totalTurn < 0) {
           return false
         }
 
-        angles[angle] = angles[angle] || []
-        if (angles[angle].includes(commands)) {
+        //Ignore boring arcs
+        const arc = loops / sides
+        if (arc === 1/2 || arc === 1 || arc > 1) {
           return false
-        } else {
-          angles[angle].push(commands)
-          return true
         }
+        const totalArc = totalTurn * arc
+        if (totalArc === 1/2 || totalArc === 1 || totalArc > 1) {
+          return false
+        }
+
+        if (shouldIgnore({loops, sides, commands})) {
+          return false
+        }
+
+        return true
       }
 
       const moves = ['F', 'R', 'L']
       function recMove(config, commandsSupply) {
         if (commandsSupply === 0) {
-          config.commands = simplify(config.commands)
-          if (uniqueForward(config.commands)) {
-            if (interesting(config)) {
-              draw(config)
-            }
+          if (interesting(config)) {
+            draw(config)
           }
         } else {
           for (const move of moves) {
-            recMove({...config, commands: config.commands + move}, commandsSupply - 1)
+            //Ignore pointless reverse turns
+            const prevMove = config.commands[config.commands.length - 1]
+            if (!(
+                (move === 'L' && prevMove === 'R')
+                || (move === 'R' && prevMove === 'L')
+            )) {
+              recMove(
+                {...config, commands: config.commands + move},
+                commandsSupply - 1
+              )
+            }
           }
         }
       }
 
-      const minSupply = 1
-      const maxSupply = 12
       for (let supply = minSupply; supply < maxSupply; supply++) {
-        for (let s = 0; s <= supply; s++) {
-          const angleSupply = s
-          const commandsSupply = supply - s
-          for (let as = 0; as <= angleSupply; as++) {
-            const loopsSupply = as
-            const sidesSupply = angleSupply - as
-            const newConfig = {
-              loops: 1 + loopsSupply,
-              sides: 3 + sidesSupply,
-              commands: 'F'
-            }
-            recMove(newConfig, commandsSupply)
+        for (
+          let loopsSupply = 0;
+          (loopsSupply + 1) < Math.min(sides, supply);
+          loopsSupply++
+        ) {
+          const commandsSupply = supply - loopsSupply
+          const newConfig = {
+            loops: 1 + loopsSupply,
+            sides,
+            commands: 'F'
           }
+          recMove(newConfig, commandsSupply)
         }
       }
     </script>
