@@ -1,0 +1,7 @@
+somehow jump between total angles
+fix the weighted center
+make animation stop less obruptly
+remove scroll bar
+
+comment the code
+test in different browsers
