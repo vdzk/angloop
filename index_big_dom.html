@@ -14,14 +14,10 @@
   </head>
   <body>
     <div id="svgs"></div>
-    <button type="button" id="next">Next</button><span id="total"></span>
-
     <script>
-      const maxToDraw = 10000
-      const minSupply = 40
-      const maxSupply = 41
-      const sides = 8
-      const randomFilter = 0.50
+      const minSupply = 11
+      const maxSupply = 12
+      const sides = 5
 
       let size = 128
       function draw({loops, sides, commands}) {
@@ -234,22 +230,13 @@
       }
 
       const moves = ['F', 'R', 'L']
-      const toDraw = []
       function recMove(config, commandsSupply) {
-        if (toDraw.length >= maxToDraw) {
-          return false;
-        }
-        if (Math.random() < randomFilter) {
-          return false;
-        }
         if (commandsSupply === 0) {
           if (interesting(config)) {
-            // draw(config)
-            toDraw.push(config)
+            draw(config)
           }
         } else {
           for (const move of moves) {
-
             //Ignore pointless reverse turns
             const prevMove = config.commands[config.commands.length - 1]
             if (!(
@@ -279,20 +266,6 @@
           }
           recMove(newConfig, commandsSupply)
         }
-      }
-
-      document.getElementById('next').addEventListener('click', showNextPage)
-
-      const pageSize = 500
-      let pageNum = 0
-      document.getElementById('total').innerHTML = toDraw.length;
-      function showNextPage() {
-        document.getElementById('svgs').innerHTML = '';
-        for (let i = pageNum * pageSize; i < (pageNum + 1) * pageSize && i < toDraw.length; i++ ) {
-          draw(toDraw[i])
-        }
-        pageNum++
-        window.scrollTo(0,0)
       }
     </script>
   </body>

@@ -4,23 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:ital,wght@1,300&display=swap" rel="stylesheet">
+    <link rel="icon"
+      type="image/png"
+      href="./favicon.png">
     <script type="module" src="/js/app.js"></script>
-    <title>Angloop!</title>
+    <title>Angloop</title>
   </head>
-  <body>
+  <body class="dark">
     <div id="app">
       <div id="output">
         <canvas id="canvas"></canvas>
       </div>
       <div id="controls">
-        <h1>Angloop!</h1>
-        <div>
-          <input type="checkbox" id="mirror" checked >
-          <label for="mirror">Mirror</label>
+        <div class="controls_cont">
+
+          <button id="mutateDirections" class="primary">
+            <span>Shuffle</span>
+          </button>
+
+          <br>
+          <br>
+          <br>
+          <br>
+
+          <div>
+            Segments:
+            <button id="removeTurn"><</button>
+            <span id="numTurns">2</span>
+            <button id="addTurn">></button>
+            <br>
+            <br>
+            Sides:
+            <button id="removeSide"><</button>
+            <span id="numSides">3</span>
+            <button id="addSide">></button>
+          </div>
+          <div>
+            Dark Mode:
+            <button id="darkBtn">on</button>
+            <br>
+            <br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mirror:
+            <button id="mirrorBtn">on</button>
+          </div>
         </div>
-        <button id="addTurn">Add turn</button>
-        <button id="removeTurn">Remove turn</button>
-        <button id="mutateDirections">Mutate Directions</button>
+
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <div>
+          Best enjoyed with chill music.
+        </div>
       </div>
     </div>
   </body>

@@ -1,6 +1,8 @@
 const canvasEl = document.getElementById('canvas')
 const appEl = document.getElementById('app')
 
+const updateCallbacks = []
+
 const update = () => {
   const vh = window.innerHeight
   const vw = window.innerWidth
@@ -15,8 +17,13 @@ const update = () => {
     appEl.style.flexDirection = 'column'
   }
   appEl.style.opacity = 1
+  updateCallbacks.forEach(cb => cb())
 }
 
 window.addEventListener('resize', update)
 
 update()
+
+export const onLayoutUpdate = (callback) => {
+  updateCallbacks.push(callback)
+}

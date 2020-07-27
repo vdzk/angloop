@@ -1,7 +1,10 @@
 somehow jump between total angles
 fix the weighted center
+  calculate it by averaging first points of every side
 make animation stop less obruptly
 remove scroll bar
 
 comment the code
 test in different browsers
+
+add favicon from 90 deg. shape to fit the pixels

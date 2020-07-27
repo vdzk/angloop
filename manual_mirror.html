@@ -7,7 +7,13 @@
       input[type="number"] {
         width:40px;
       }
-      input#commands {
+      input#top, input#bottom {
+        width:100px;
+      }
+      input#bottom {
+        width:40px;
+      }
+      input#mirror {
         width:400px;
       }
       svg {
@@ -24,37 +30,50 @@
     <br >
     Loops:<input type="number" id="loops" min="1" value="1">
     Sides:<input type="number" id="sides" min="3" value="3">
-    Commands:<input type="text" id="commands" value="FR">
-    <button type="button" id="rotateLeft">◄</button>
-    <button type="button" id="rotateRight">►</button>
+    Commands:
+    <input type="text" id="top" value="" disabled>
+    <input type="text" id="mirror" value="F">
+    <input type="text" id="bottom" maxlength="1" value="R">
     <script>
       document.querySelectorAll('input').forEach(
         input => {
+          if (input.disabled) return false
           input.addEventListener('change', draw)
           input.addEventListener('keyup', draw)
           input.addEventListener('click', draw)
         }
       )
-      document.getElementById('rotateLeft').addEventListener('click', rotateLeft)
-      document.getElementById('rotateRight').addEventListener('click', rotateRight)
-      function rotateRight() {rotate(true)}
-      function rotateLeft() {rotate(false)}
-      function rotate(right) {
-        console.log(right)
-        const commandsEl = document.getElementById('commands')
-        const old = commandsEl.value
-        if (right) {
-          commandsEl.value = old.slice(1) + old[0]
+
+      function turnReducer(total, command) {
+        if (command === 'R') {
+          return total + 1
+        } else if (command === 'L') {
+          return total - 1
         } else {
-          commandsEl.value = old[old.length - 1] + old.slice(0, old.length - 1)
+          return total
         }
-        draw()
       }
+
+      function getVertexCommands(loops, sides, edgeCommands) {
+        const edgeTurn = edgeCommands.split('').reduce(turnReducer, 0) % sides
+        let vertexTurn = loops - edgeTurn % sides
+        if (vertexTurn < 0) vertexTurn += sides
+        let vertexCommands = Array(vertexTurn).fill('R').join('')
+        return vertexCommands
+      }
+
       function drawSvg(loop) {
         const loops = parseInt(document.getElementById('loops').value)
         const sides = parseInt(document.getElementById('sides').value)
-        const commands = document.getElementById('commands').value
-        const turn = (loops * Math.PI * 2) / sides  //In radians
+        const commandParts = ['mirror', 'bottom'].map((id) => document.getElementById(id).value)
+        const mirrored = commandParts[0].split('').reverse().join('')
+        commandParts.push(mirrored)
+        const edgeCommands = commandParts.join('')
+        const vertexCommands = getVertexCommands(loops, sides, edgeCommands)
+        document.getElementById('top').value = vertexCommands
+        const commands = vertexCommands + edgeCommands
+        console.log({edgeCommands, vertexCommands, commands})
+        const turn = (1 * Math.PI * 2) / sides  //In radians
         let angle = turn
         let lastPoint = {x: 0, y: 0}
         const points = [{x: 0, y: 0}]

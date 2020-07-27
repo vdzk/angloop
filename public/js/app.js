@@ -1,137 +1,142 @@
-import './layout.js'
+import { onLayoutUpdate } from './layout.js'
 import { draw } from './draw.js'
 import { simpleMutator } from './simpleMutator.js'
 import { mirrorMutator } from './mirrorMutator.js'
 
-let sides = 6
-let numTurns = 11 //at least 2 for mirror ?
-let turnes
+let sides = 3
+let newSides = null
+let numTurns = 2
 let prog = 0  //Animation progress
 let animationStart = null
-
-const dom = Object.fromEntries(['mirror', 'mutateDirections', 'addTurn', 'removeTurn']
-  .map(id => [id, document.getElementById(id)])
-)
-
+let nextAnimation = null
+let mirror = true
+let dark = true
+let requestedFrame = false
+let spinSize
 let mutator
+const dom = {}
+
+;['numTurns', 'numSides', 'darkBtn', 'mirrorBtn'].forEach(id => dom[id] = document.getElementById(id))
+
+//Swtich between mutators
 const updateMutator = () => {
-  mutator = (dom.mirror.checked) ? mirrorMutator : simpleMutator
-  turnes = mutator.init({ sides, numTurns })
-  draw({ sides, turns, prog})
+  mutator = (mirror) ? mirrorMutator : simpleMutator
+  mutator.init({ sides, numTurns })
+  draw({ sides, turns: mutator.getTurns(), prog, dark})
 }
+onLayoutUpdate(() => draw({ sides, turns: mutator.getTurns(), prog, dark }))
 updateMutator()
-dom.mirror.onchange = updateMutator
-
-dom.mutateDirections.onclick = () => {
-  turnes = mutator.mutateDirections()
-  animationStart = performance.now()
-  window.requestAnimationFrame(step)
+dom.mirrorBtn.onclick = () => {
+  mirror = !mirror
+  updateMutator()
+  dom.mirrorBtn.textContent = (mirror) ? 'on' : 'off'
 }
 
-const step = (timestamp) => {
-  prog += (timestamp - animationStart) / 20000
+//Switch dark / light modes
+dom.darkBtn.onclick = () => {
+  dark = !dark
+  const cls = document.body.classList
+  if (dark) {
+    cls.add('dark')
+  } else {
+    cls.remove('dark')
+  }
+  draw({ sides, turns: mutator.getTurns(), prog, dark })
+  dom.darkBtn.textContent = (dark) ? 'on' : 'off'
+}
+
+//Animation step function
+const step = (timestamp, changeSides) => {
+  if (changeSides) {
+    const duration = (spinSize) ? 1000000 * spinSize : 80000
+    prog += (timestamp - animationStart) / duration
+  } else {
+    prog += (timestamp - animationStart) / 60000
+  }
+
   if (prog < 1) {
-    window.requestAnimationFrame(step)
+    window.requestAnimationFrame(t => step(t, changeSides))
+    requestedFrame = true
+    draw({ sides, newSides, turns: mutator.getTurns(), prog, dark })
   } else {
     prog = 0
-    turnes = mutator.endMutation()
-  }
-  draw({ sides, turnes, prog})
-}
-
-dom.addTurn.onclick = () => {
-  numTurns++
-  turnes = mutator.addTurn()
-  window.requestAnimationFrame(step)
-}
-
-dom.removeTurn.onclick = () => {
-  numTurns--
-  turnes = mutator.removeTurn()
-  window.requestAnimationFrame(step)
-}
-
-
-
-
-document.getElementById('mirror').onchange = () => {
-  mirror = document.getElementById('mirror').checked
-  init()
-}
-
-let sides = 6
-//at least 2 for mirror ?
-let numTurns = 11
-let turnes
-
-
-let prog = 0  //Animation progress
-let animationStart = null
-
-const step = (timestamp) => {
-  prog += (timestamp - animationStart) / 20000
-  if (prog < 1) {
-    window.requestAnimationFrame(step)
-  } else {
-    prog = 0
-    prevMutation = nextMutation
-  }
-  let turnesStart
-  let turnesEnd
-  //TODO: cash stitched version?
-  if (mirror) {
-    turnesStart = stitchMirror(prevMutation)
-    turnesEnd = stitchMirror(nextMutation)
-  } else {
-    turnesStart = prevMutation
-    turnesEnd = nextMutation
-  }
-  draw({ sides, turnesStart, turnesEnd, prog})
-}
-
-let prevMutation
-let nextMutation
-
-const mutate = () => {
-  if (mirror) {
-    nextMutation = mirrorMutate(prevMutation)
-  } else {
-    nextMutation = simpleMutate(prevMutation)
-  }
-  animationStart = performance.now()
-  window.requestAnimationFrame(step)
-}
-
-const getRandomTurns = () => Array(numTurns).fill(0).map(
-  () => Math.floor(sides * Math.random())
-)
-
-const init = () => {
-  let turns
-  if (mirror) {
-    prevMutation = {
-      turns: getRandomTurns(),
-      firstTurn: Math.floor(sides * Math.random()),
+    if (changeSides) {
+      sides = newSides
+      newSides = null
     }
-    turns = stitchMirror(prevMutation)
-  } else {
-    turns = getRandomTurns()
-    prevMutation = turns
+    mutator.endMutation()
+    if (nextAnimation) {
+      setTimeout(() => {
+        //Start the new animation on the next call stack
+        nextAnimation()
+        nextAnimation = null
+      })
+    } else {
+      draw({ sides, turns: mutator.getTurns(), prog, dark })
+    }
   }
-  draw({ sides, turnesStart: turns, turnesEnd: turns, prog})
+  requestedFrame = false
 }
 
-init()
+//Mutation types
+const mutations = [
+  {
+    name: 'mutateDirections',
+    update: () => {},
+  },
+  {
+    name: 'addTurn',
+    update: () => {
+      numTurns++
+      dom.numTurns.textContent = numTurns
+    },
+  },
+  {
+    name: 'removeTurn',
+    update: () => {
+      numTurns--
+      dom.numTurns.textContent = numTurns
+    },
+    test: () => numTurns > 2,
+  },
+  {
+    name: 'addSide',
+    update: () => {
+      newSides = sides + 1
+      dom.numSides.textContent = newSides
+    },
+    changeSides: true,
+  },
+  {
+    name: 'removeSide',
+    update: () => {
+      newSides = sides - 1
+      dom.numSides.textContent = newSides
+    },
+    changeSides: true,
+    test: () => sides > 3,
+  }
+]
 
-document.getElementById('mutate').onclick = mutate
-
-
-let addTurn
-let removeTurn
-
-document.getElementById('addTurn').onclick = () => {
-
-}
-document.getElementById('removeTurn').onclick = () => {
-
+//Initialise mutation types
+for (const { name, update, changeSides, test } of mutations) {
+  const mutate = () => {
+    if (test && !test()) {
+      return false
+    }
+    //Avoid starting the aimation twice
+    if (prog > 0 || requestedFrame) {
+      if (prog > 0.6 && prog < 1 && nextAnimation !== mutate) {
+        nextAnimation = mutate
+      }
+      return false
+    }
+    update()
+    mutator[name](sides)
+    animationStart = performance.now()
+    window.requestAnimationFrame(t => step(t, changeSides))
+    requestedFrame = true
+  }
+  dom[name] = document.getElementById(name)
+  dom[name].onclick = mutate
 }

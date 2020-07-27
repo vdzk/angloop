@@ -1,10 +1,14 @@
-body {
+html, body {
   margin: 0px;
+  padding: 0px;
+  font-family: 'Alegreya Sans SC', sans-serif;
+  font-size: 1.2em;
 }
 
 #app {
   display: flex;
   opacity: 0;
+  align-items: center;
 }
 
 #output {
@@ -13,4 +17,56 @@ body {
 
 #canvas {
   width: 100%;
+  display: block;
+}
+
+.controls_cont {
+  display: flex;
+}
+.controls_cont > div {
+  margin-left: 20px;
+}
+
+.dark {
+  background: #252525;
+  color: white;
+}
+
+button {
+  background: transparent;
+  padding: 0.5em;
+  cursor: pointer;
+  margin: 0 0.3em;
+  font-family: 'Alegreya Sans SC', sans-serif;
+  border: 2px solid;
+  border-radius: 0;
+  transform: skew(-8deg);
+  font-size: 1em;
+  font-weight: bold;
+}
+
+button.primary {
+  font-weight: bold;
+  font-size: 2em;
+}
+
+button > span {
+  transform: skew(8deg);
+  display: inline-block;
+}
+
+button:focus {
+  outline:0;
+  background: lightgray;
+}
+
+.dark button {
+  border-color: white;
+  color: white;
+
+}
+
+@font-face {
+  font-family: 'caesar';
+  src: URL('./CaesarDressing-Regular.ttf') format('truetype');
 }
