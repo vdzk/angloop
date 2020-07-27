@@ -14,7 +14,9 @@
   <body class="dark">
     <div id="app">
       <div id="output">
-        <canvas id="canvas"></canvas>
+        <div id="canvas_cont">
+          <canvas id="canvas"></canvas>
+        </div>
       </div>
       <div id="controls">
         <div class="controls_cont">
@@ -23,41 +25,33 @@
             <span>Shuffle</span>
           </button>
 
-          <br>
-          <br>
-          <br>
-          <br>
+          <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+
 
           <div>
-            Segments:
-            <button id="removeTurn"><</button>
-            <span id="numTurns">2</span>
-            <button id="addTurn">></button>
+
+            <div class="numberControl">
+              <button id="removeTurn"><</button>
+              <div class="dial">
+                <div id="numTurns">2</div>
+                <div>segments</div>
+              </div>
+              <button id="addTurn">></button>
+            </div>
             <br>
-            <br>
-            Sides:
-            <button id="removeSide"><</button>
-            <span id="numSides">3</span>
-            <button id="addSide">></button>
-          </div>
-          <div>
-            Dark Mode:
-            <button id="darkBtn">on</button>
-            <br>
-            <br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Mirror:
-            <button id="mirrorBtn">on</button>
+            <div class="numberControl">
+              <button id="removeSide"><</button>
+              <div class="dial">
+                <div id="numSides">3</div>
+                <div>sides</div>
+              </div>
+              <button id="addSide">></button>
+            </div>
+
           </div>
         </div>
 
-        <br>
-        <br>
-        <br>
-        <br>
-        <br>
-        <div>
-          Best enjoyed with chill music.
-        </div>
+
       </div>
     </div>
   </body>

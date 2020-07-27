@@ -7,24 +7,48 @@ html, body {
 
 #app {
   display: flex;
-  opacity: 0;
-  align-items: center;
+  align-items: stretch;
+  /* opacity: 0; */
+  height:100vh;
+  width:100%;
 }
 
 #output {
-  /* flex-grow: 1; */
+  flex: 2;
+  position: relative;
 }
 
-#canvas {
-  width: 100%;
-  display: block;
+#canvas_cont {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.numberControl {
+  display: flex;
+}
+
+.dial {
+  flex: 1;
+  text-align: center;
+  padding: 0 1rem;
 }
 
 .controls_cont {
   display: flex;
-}
-.controls_cont > div {
-  margin-left: 20px;
+  flex-direction: column;
 }
 
 .dark {
@@ -36,22 +60,20 @@ button {
   background: transparent;
   padding: 0.5em;
   cursor: pointer;
-  margin: 0 0.3em;
+  margin: 1 rem;
   font-family: 'Alegreya Sans SC', sans-serif;
   border: 2px solid;
   border-radius: 0;
-  transform: skew(-8deg);
   font-size: 1em;
   font-weight: bold;
 }
 
 button.primary {
   font-weight: bold;
-  font-size: 2em;
+  font-size: 2rem;
 }
 
 button > span {
-  transform: skew(8deg);
   display: inline-block;
 }
 
@@ -66,7 +88,28 @@ button:focus {
 
 }
 
-@font-face {
-  font-family: 'caesar';
-  src: URL('./CaesarDressing-Regular.ttf') format('truetype');
+@media (max-aspect-ratio: 1/1) {
+  #app {
+    flex-direction: column;
+  }
+}
+
+@media (max-aspect-ratio: 1/1) {
+  #controls {
+    padding-top: 0;
+    /* height: 30%; */
+  }
+}
+
+@media (min-aspect-ratio: 1/1) {
+  #controls {
+    padding-left: 0;
+    /* width: 20%; */
+  }
+}
+
+@media (min-aspect-ratio: 2/3) and (max-aspect-ratio: 1/1) {
+  .controls_cont {
+    flex-direction: row;
+  }
 }

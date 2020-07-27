@@ -4,18 +4,14 @@ const appEl = document.getElementById('app')
 const updateCallbacks = []
 
 const update = () => {
-  const vh = window.innerHeight
-  const vw = window.innerWidth
+  const parentStyles = getComputedStyle(canvasEl.parentNode)
+  const size = Math.min(...['height', 'width'].map(dim => 
+    parseInt(parentStyles.getPropertyValue(dim))
+  ))
 
-  if (vw > vh) {
-    canvasEl.height = vh
-    canvasEl.width = vh
-    appEl.style.flexDirection = 'row'
-  } else {
-    canvasEl.width = vw
-    canvasEl.height = vw
-    appEl.style.flexDirection = 'column'
-  }
+
+  canvasEl.height = size
+  canvasEl.width = size
   appEl.style.opacity = 1
   updateCallbacks.forEach(cb => cb())
 }

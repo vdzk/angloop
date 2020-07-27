@@ -26,24 +26,24 @@ const updateMutator = () => {
 }
 onLayoutUpdate(() => draw({ sides, turns: mutator.getTurns(), prog, dark }))
 updateMutator()
-dom.mirrorBtn.onclick = () => {
-  mirror = !mirror
-  updateMutator()
-  dom.mirrorBtn.textContent = (mirror) ? 'on' : 'off'
-}
+// dom.mirrorBtn.onclick = () => {
+//   mirror = !mirror
+//   updateMutator()
+//   dom.mirrorBtn.textContent = (mirror) ? 'on' : 'off'
+// }
 
-//Switch dark / light modes
-dom.darkBtn.onclick = () => {
-  dark = !dark
-  const cls = document.body.classList
-  if (dark) {
-    cls.add('dark')
-  } else {
-    cls.remove('dark')
-  }
-  draw({ sides, turns: mutator.getTurns(), prog, dark })
-  dom.darkBtn.textContent = (dark) ? 'on' : 'off'
-}
+// //Switch dark / light modes
+// dom.darkBtn.onclick = () => {
+//   dark = !dark
+//   const cls = document.body.classList
+//   if (dark) {
+//     cls.add('dark')
+//   } else {
+//     cls.remove('dark')
+//   }
+//   draw({ sides, turns: mutator.getTurns(), prog, dark })
+//   dom.darkBtn.textContent = (dark) ? 'on' : 'off'
+// }
 
 //Animation step function
 const step = (timestamp, changeSides) => {
