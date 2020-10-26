@@ -97,14 +97,12 @@ button:focus {
 @media (max-aspect-ratio: 1/1) {
   #controls {
     padding-top: 0;
-    /* height: 30%; */
   }
 }
 
 @media (min-aspect-ratio: 1/1) {
   #controls {
     padding-left: 0;
-    /* width: 20%; */
   }
 }
 
