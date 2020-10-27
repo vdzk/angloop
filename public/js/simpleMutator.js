@@ -1,4 +1,4 @@
-import { getRandomDirections, getRandomDirection, sum, willCollapse } from './utils.js'
+import { getRandomDirections, sum, willCollapse } from './utils.js'
 
 let turns
 

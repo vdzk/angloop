@@ -85,7 +85,6 @@ const updateCanvas = ( { points, lineWidth, dark, sides, prog } ) => {
     ctx.strokeStyle = 'black'
     ctx.shadowBlur = 0
   }
-  // ctx.lineJoin = 'bevel'
   ctx.stroke()
 }
 

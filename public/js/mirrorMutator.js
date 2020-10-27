@@ -64,11 +64,6 @@ const minimizeDirMod = (d, sides) => {
   return d
 }
 
-const preventCollapse = (sides, parts, deviation=0) => {
-
-  // return false
-}
-
 const fullTurns = (directions, sides) => Math.floor(sum(directions) / sides)
 
 const addSide = (sides) => updateSides(sides, sides + 1)
