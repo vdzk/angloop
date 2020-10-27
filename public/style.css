@@ -79,7 +79,6 @@ button > span {
 
 button:focus {
   outline:0;
-  background: lightgray;
 }
 
 .dark button {
