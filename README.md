@@ -1,5 +1,5 @@
 # Angloop
-Angloop randomly generates and animates pretty repeating anglular shapes. You can control their symmetry and complexity.
+Angloop randomly generates and animates pretty repeating angular shapes. You can control their symmetry and complexity.
 
 # Live demo
 [angloop.zubov.uk](https://angloop.zubov.uk)
